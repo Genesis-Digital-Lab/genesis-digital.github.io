@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="PDF to Image Converter - Convert PDF pages to high-quality JPG or PNG images easily. Fast, secure, and works directly in your browser.">
+    <meta name="keywords" content="pdf to image, pdf to jpg, pdf to png, online pdf tools, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/pdf-to-image.html">
+    <meta property="og:title" content="PDF to Image | EngineeringHacks">
+    <meta property="og:description"
+        content="PDF to Image Converter - Convert PDF pages to high-quality JPG or PNG images easily. Fast, secure, and works directly in your browser.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/pdf-to-image.html">
+    <meta property="twitter:title" content="PDF to Image | EngineeringHacks">
+    <meta property="twitter:description"
+        content="PDF to Image Converter - Convert PDF pages to high-quality JPG or PNG images easily. Fast, secure, and works directly in your browser.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/pdf-to-image.html">
+    <title>PDF to Image | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-color: var(--primary-color);
+        }
+
+        .page-preview {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .page-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body ng-controller="PdfToImageController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">PDF to Image Converter</h1>
+
+            <div class="card border-2 p-4 mb-4" ng-show="!pdfFile">
+                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                    <i class="bi bi-file-earmark-pdf fs-1 text-danger mb-3"></i>
+                    <h3 class="h5">Click to Upload PDF</h3>
+                    <p class="text-muted mb-0">Max file size: 10MB</p>
+                    <input type="file" id="fileInput" class="d-none" accept="application/pdf"
+                        onchange="angular.element(this).scope().handleFileSelect(this)">
+                </div>
+            </div>
+
+            <div ng-show="pdfFile">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="mb-1">{{pdfFile.name}}</h5>
+                        <p class="text-muted small mb-0">{{pageCount}} Pages</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-danger" ng-click="reset()">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                        <button class="btn btn-primary" ng-click="downloadAll()">
+                            <i class="bi bi-download"></i> Download All (ZIP)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-6 col-md-4 col-lg-3" ng-repeat="page in pages track by $index">
+                        <div class="page-preview">
+                            <div class="position-relative">
+                                <img ng-src="{{page.imgData}}" alt="Page {{$index + 1}}">
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    <span class="badge bg-dark opacity-75">Page {{$index + 1}}</span>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-light text-center">
+                                <button class="btn btn-sm btn-outline-primary w-100" ng-click="downloadPage($index)">
+                                    Download JPG
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-5" ng-if="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Processing PDF pages...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <!-- JSZip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

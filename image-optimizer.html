@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Image Optimizer - Compress and resize images for the web without losing quality. Supports JPG, PNG, and WEBP.">
+    <meta name="keywords"
+        content="image optimizer, image compressor, compress png, compress jpg, webp converter, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/image-optimizer.html">
+    <meta property="og:title" content="Image Optimizer | EngineeringHacks">
+    <meta property="og:description"
+        content="Image Optimizer - Compress and resize images for the web without losing quality. Supports JPG, PNG, and WEBP.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/image-optimizer.html">
+    <meta property="twitter:title" content="Image Optimizer | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Image Optimizer - Compress and resize images for the web without losing quality. Supports JPG, PNG, and WEBP.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/image-optimizer.html">
+    <title>Image Optimizer | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body ng-controller="ImageController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Image Optimizer</h1>
+
+            <div class="card border-2 p-4 mb-4" ng-show="!imageSrc">
+                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                    <i class="bi bi-cloud-upload fs-1 text-muted mb-3"></i>
+                    <h3 class="h5">Click to Upload Image</h3>
+                    <p class="text-muted mb-0">Supports JPG, PNG, WEBP</p>
+                    <input type="file" id="fileInput" class="d-none" accept="image/*"
+                        onchange="angular.element(this).scope().handleFileSelect(this)">
+                </div>
+            </div>
+
+            <div class="row g-4" ng-show="imageSrc">
+                <div class="col-md-6">
+                    <div class="card border-2 p-3 h-100">
+                        <h5 class="card-title">Original</h5>
+                        <p class="small text-muted">{{originalSize}}</p>
+                        <div class="text-center">
+                            <img ng-src="{{imageSrc}}" class="preview-img">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-2 p-3 h-100">
+                        <h5 class="card-title">Compressed</h5>
+                        <p class="small text-muted" ng-show="compressedSize">{{compressedSize}} ({{savings}}% saved)</p>
+
+                        <div class="mb-3">
+                            <label class="form-label">Quality: {{quality}}%</label>
+                            <input type="range" class="form-range" min="1" max="100" ng-model="quality"
+                                ng-model-options="{ debounce: 300 }" ng-change="compressImage()">
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <img ng-src="{{compressedSrc}}" class="preview-img" ng-show="compressedSrc">
+                            <div ng-show="!compressedSrc" class="spinner-border text-primary"></div>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-2">
+                            <button class="btn btn-retro flex-grow-1" ng-click="downloadImage()"
+                                ng-disabled="!compressedSrc">
+                                <i class="bi bi-download"></i> Download
+                            </button>
+                            <button class="btn btn-outline-danger" ng-click="reset()">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        </div>
+
+                        <!-- Social Sharing -->
+                        <div class="mt-3 pt-3 border-top" ng-show="compressedSrc">
+                            <p class="small fw-bold mb-2">Share Optimized Image:</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" ng-click="shareImage('whatsapp')">
+                                    <i class="bi bi-whatsapp"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" ng-click="shareImage('telegram')">
+                                    <i class="bi bi-telegram"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" ng-click="shareImage('twitter')">
+                                    <i class="bi bi-twitter"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" ng-click="copyShareLink()">
+                                    <i class="bi bi-link-45deg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

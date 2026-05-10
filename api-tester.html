@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Advanced API Tester - Test REST APIs, manage collections, and import cURL commands directly from your browser.">
+    <meta name="keywords" content="api tester, rest api client, curl import, postman alternative, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/api-tester.html">
+    <meta property="og:title" content="API Tester | EngineeringHacks">
+    <meta property="og:description"
+        content="Advanced API Tester - Test REST APIs, manage collections, and import cURL commands directly from your browser.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/api-tester.html">
+    <meta property="twitter:title" content="API Tester | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Advanced API Tester - Test REST APIs, manage collections, and import cURL commands directly from your browser.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/api-tester.html">
+    <title>API Tester | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .code-editor {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            min-height: 200px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .history-item {
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .method-badge {
+            width: 50px;
+            display: inline-block;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+
+<body ng-controller="ApiController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container-fluid px-4">
+            <div class="row g-4">
+                <!-- History Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card border-2 h-100">
+                        <div
+                            class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center">
+                            <span>History</span>
+                            <button class="btn btn-sm btn-outline-danger py-0" ng-click="clearHistory()"
+                                style="font-size: 0.7rem;">Clear</button>
+                        </div>
+                        <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
+                            <div ng-if="history.length === 0" class="p-3 text-muted small">No history yet.</div>
+                            <div class="history-item" ng-repeat="item in history track by $index"
+                                ng-click="loadHistory(item)">
+                                <span class="method-badge text-{{getMethodColor(item.method)}}">{{item.method}}</span>
+                                <span class="text-truncate d-inline-block" style="max-width: 150px;">{{item.url}}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-outline-dark btn-sm w-100" ng-click="exportCollections()">
+                                <i class="bi bi-download me-1"></i>Export Collections
+                            </button>
+                            <input type="file" id="importFile" style="display: none;"
+                                onchange="angular.element(this).scope().importCollections(this)">
+                            <button class="btn btn-outline-dark btn-sm w-100 mt-2"
+                                onclick="document.getElementById('importFile').click()">
+                                <i class="bi bi-upload me-1"></i>Import Collections
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Section -->
+                <div class="col-lg-9">
+                    <h1 class="h3 mb-4">API Tester</h1>
+
+                    <div class="card border-2 p-3 mb-4">
+                        <div class="input-group mb-3">
+                            <select class="form-select" style="max-width: 100px;" ng-model="method">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                            <input type="text" class="form-control" placeholder="https://api.example.com/v1/resource"
+                                ng-model="url">
+                            <button class="btn btn-retro" ng-click="sendRequest()" ng-disabled="loading">
+                                <span ng-show="!loading">Send</span>
+                                <span ng-show="loading" class="spinner-border spinner-border-sm"></span>
+                            </button>
+                        </div>
+
+                        <!-- Request Tabs -->
+                        <ul class="nav nav-tabs mb-3" id="requestTabs" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab"
+                                    data-bs-target="#params">Params</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#auth">Auth</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#headers">Headers</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#body">Body</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="requestTabsContent">
+                            <!-- Params -->
+                            <div class="tab-pane fade show active" id="params">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless">
+                                        <thead>
+                                            <tr class="small text-muted">
+                                                <th>Key</th>
+                                                <th>Value</th>
+                                                <th style="width: 40px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="param in params">
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="param.key" placeholder="Key"
+                                                        ng-change="updateUrlFromParams()"></td>
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="param.value" placeholder="Value"
+                                                        ng-change="updateUrlFromParams()"></td>
+                                                <td><button class="btn btn-link btn-sm text-danger"
+                                                        ng-click="removeParam($index)"><i class="bi bi-x"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button class="btn btn-link btn-sm text-primary p-0" ng-click="addParam()">+ Add
+                                        Parameter</button>
+                                </div>
+                            </div>
+
+                            <!-- Auth -->
+                            <div class="tab-pane fade" id="auth">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select form-select-sm" ng-model="auth.type">
+                                            <option value="none">No Auth</option>
+                                            <option value="bearer">Bearer Token</option>
+                                            <option value="basic">Basic Auth</option>
+                                            <option value="apikey">API Key</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div ng-if="auth.type === 'bearer'">
+                                            <input type="text" class="form-control form-control-sm"
+                                                ng-model="auth.token" placeholder="Token">
+                                        </div>
+                                        <div ng-if="auth.type === 'basic'" class="d-flex gap-2">
+                                            <input type="text" class="form-control form-control-sm"
+                                                ng-model="auth.username" placeholder="Username">
+                                            <input type="password" class="form-control form-control-sm"
+                                                ng-model="auth.password" placeholder="Password">
+                                        </div>
+                                        <div ng-if="auth.type === 'apikey'" class="d-flex gap-2">
+                                            <input type="text" class="form-control form-control-sm" ng-model="auth.key"
+                                                placeholder="Key">
+                                            <input type="text" class="form-control form-control-sm"
+                                                ng-model="auth.value" placeholder="Value">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Headers -->
+                            <div class="tab-pane fade" id="headers">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless">
+                                        <thead>
+                                            <tr class="small text-muted">
+                                                <th>Key</th>
+                                                <th>Value</th>
+                                                <th style="width: 40px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="header in headers">
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="header.key" placeholder="Key"></td>
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="header.value" placeholder="Value"></td>
+                                                <td><button class="btn btn-link btn-sm text-danger"
+                                                        ng-click="removeHeader($index)"><i class="bi bi-x"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button class="btn btn-link btn-sm text-primary p-0" ng-click="addHeader()">+ Add
+                                        Header</button>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="tab-pane fade" id="body">
+                                <div class="mb-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" ng-model="bodyType" value="none">
+                                        <label class="form-check-label small">none</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" ng-model="bodyType" value="json">
+                                        <label class="form-check-label small">json</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" ng-model="bodyType"
+                                            value="form-data">
+                                        <label class="form-check-label small">form-data</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" ng-model="bodyType" value="raw">
+                                        <label class="form-check-label small">raw</label>
+                                    </div>
+                                </div>
+                                <div ng-if="bodyType === 'json' || bodyType === 'raw'">
+                                    <textarea class="form-control code-editor" ng-model="requestBody"
+                                        placeholder="Request body..."></textarea>
+                                </div>
+                                <div ng-if="bodyType === 'form-data'">
+                                    <table class="table table-sm table-borderless">
+                                        <tbody>
+                                            <tr ng-repeat="field in formData">
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="field.key" placeholder="Key"></td>
+                                                <td><input type="text" class="form-control form-control-sm"
+                                                        ng-model="field.value" placeholder="Value"></td>
+                                                <td><button class="btn btn-link btn-sm text-danger"
+                                                        ng-click="removeFormData($index)"><i
+                                                            class="bi bi-x"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button class="btn btn-link btn-sm text-primary p-0" ng-click="addFormData()">+ Add
+                                        Field</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Section -->
+                    <div class="card border-2" ng-show="response">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-2">
+                            <span class="fw-bold small">Response</span>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="small text-muted" ng-show="responseTime">{{responseTime}} ms</span>
+                                <span class="badge"
+                                    ng-class="{'bg-success': response.status < 300, 'bg-danger': response.status >= 400, 'bg-warning': response.status >= 300 && response.status < 400}">
+                                    {{response.status}} {{response.statusText}}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="nav nav-tabs px-3 pt-2" id="responseTabs">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-bs-toggle="tab"
+                                        data-bs-target="#respBody">Body</button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab"
+                                        data-bs-target="#respHeaders">Headers</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content p-3">
+                                <div class="tab-pane fade show active" id="respBody">
+                                    <pre class="bg-light p-3 rounded code-editor mb-0"
+                                        style="max-height: 400px; overflow-y: auto;">{{response.data | json}}</pre>
+                                </div>
+                                <div class="tab-pane fade" id="respHeaders">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm small">
+                                            <tbody>
+                                                <tr ng-repeat="(key, value) in response.headers()">
+                                                    <td class="fw-bold text-muted" style="width: 200px;">{{key}}</td>
+                                                    <td>{{value}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import CURL Modal Trigger -->
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-secondary" ng-click="showCurlModal()">
+                            <i class="bi bi-terminal me-1"></i>Import from cURL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- cURL Modal -->
+    <div class="modal fade" id="curlModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import from cURL</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control font-monospace" rows="10" ng-model="curlInput"
+                        placeholder="Paste cURL command here..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" ng-click="importCurl()">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Audio Tester - Test your headphones with frequency generation and microphone with spectrum analysis. Fast, secure, and works directly in your browser.">
+    <meta name="keywords"
+        content="audio tester, headphone test, microphone test, frequency generator, spectrum analyzer, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/audio-tester.html">
+    <meta property="og:title" content="Audio Tester | EngineeringHacks">
+    <meta property="og:description"
+        content="Audio Tester - Test your headphones with frequency generation and microphone with spectrum analysis. Fast, secure, and works directly in your browser.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/audio-tester.html">
+    <meta property="twitter:title" content="Audio Tester | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Audio Tester - Test your headphones with frequency generation and microphone with spectrum analysis. Fast, secure, and works directly in your browser.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/audio-tester.html">
+    <title>Audio Tester | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        canvas {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body ng-controller="AudioController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Audio Tester</h1>
+
+            <div class="row g-4">
+                <!-- Headphone Tester -->
+                <div class="col-md-6">
+                    <div class="card border-2 p-4 h-100">
+                        <h3 class="h5 mb-3"><i class="bi bi-headphones me-2"></i>Headphone Tester</h3>
+                        <p class="text-muted small">Generate frequencies to test your speakers/headphones.</p>
+
+                        <div class="mb-3">
+                            <label class="form-label">Frequency: {{frequency}} Hz</label>
+                            <input type="range" class="form-range" min="20" max="20000" ng-model="frequency"
+                                ng-change="updateFrequency()">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Volume: {{volume}}%</label>
+                            <input type="range" class="form-range" min="0" max="100" ng-model="volume"
+                                ng-change="updateVolume()">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Wave Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary"
+                                    ng-class="{'active': waveType==='sine'}"
+                                    ng-click="setWaveType('sine')">Sine</button>
+                                <button type="button" class="btn btn-outline-primary"
+                                    ng-class="{'active': waveType==='square'}"
+                                    ng-click="setWaveType('square')">Square</button>
+                                <button type="button" class="btn btn-outline-primary"
+                                    ng-class="{'active': waveType==='sawtooth'}"
+                                    ng-click="setWaveType('sawtooth')">Saw</button>
+                                <button type="button" class="btn btn-outline-primary"
+                                    ng-class="{'active': waveType==='triangle'}"
+                                    ng-click="setWaveType('triangle')">Triangle</button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" ng-click="toggleTone()">
+                                <i class="bi" ng-class="isPlaying ? 'bi-stop-fill' : 'bi-play-fill'"></i>
+                                {{isPlaying ? 'Stop Tone' : 'Play Tone'}}
+                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary flex-grow-1" ng-click="playLeft()">Left
+                                    Only</button>
+                                <button class="btn btn-outline-secondary flex-grow-1" ng-click="playRight()">Right
+                                    Only</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mic Tester -->
+                <div class="col-md-6">
+                    <div class="card border-2 p-4 h-100">
+                        <h3 class="h5 mb-3"><i class="bi bi-mic me-2"></i>Microphone Tester</h3>
+                        <p class="text-muted small">Visualize audio input from your microphone.</p>
+
+                        <div class="text-center mb-3" ng-if="!micActive">
+                            <button class="btn btn-success" ng-click="startMic()">
+                                <i class="bi bi-mic-fill me-2"></i>Start Microphone Test
+                            </button>
+                        </div>
+
+                        <div ng-show="micActive">
+                            <canvas id="micVisualizer"></canvas>
+                            <div class="mt-3 text-center">
+                                <button class="btn btn-danger btn-sm" ng-click="stopMic()">Stop</button>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning mt-3 small" ng-if="micError">
+                            {{micError}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="EngineeringHacks - A curated collection of powerful developer tools, PDF utilities, image editors, and career roadmaps to help you work easier and build faster.">
+    <meta name="keywords"
+        content="developer tools, engineering hacks, json formatter, image optimizer, regex tester, api tester, pdf tools, merge pdf, split pdf, image editor, roadmaps">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/">
+    <meta property="og:title" content="EngineeringHacks | Powerful Developer Tools & Roadmaps">
+    <meta property="og:description"
+        content="A curated collection of powerful developer tools, PDF utilities, image editors, and career roadmaps to help you work easier and build faster.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/">
+    <meta property="twitter:title" content="EngineeringHacks | Powerful Developer Tools & Roadmaps">
+    <meta property="twitter:description"
+        content="A curated collection of powerful developer tools, PDF utilities, image editors, and career roadmaps to help you work easier and build faster.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/">
+    <title>EngineeringHacks | Powerful Developer Tools & Roadmaps</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body ng-controller="MainController">
+
+    <!-- Skip to Content -->
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">EngineeringHacks</h1>
+            <div class="tech-anim">v2.0_work_made_easier</div>
+            <p class="hero-tagline">Powerful tools to simplify your engineering life</p>
+        </div>
+    </section>
+
+    <!-- Main Content Tabs -->
+    <section class="py-4" id="main-content">
+        <div class="container">
+            <!-- Tab Content -->
+            <div class="tab-content" id="mainTabsContent">
+
+                <!-- Tools Pane -->
+                <div class="tab-pane fade show active" id="tools-pane" role="tabpanel" aria-labelledby="tools-tab">
+                    <!-- Filters -->
+                    <div class="d-flex justify-content-center flex-wrap mb-4">
+                        <button class="filter-btn" ng-repeat="cat in categories"
+                            ng-class="{'active': selectedCategory === cat}" ng-click="filterTools(cat)">
+                            {{cat}}
+                        </button>
+                    </div>
+
+                    <!-- Tools Grid -->
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3" ng-repeat="tool in tools" ng-show="isToolVisible(tool)">
+                            <div class="tool-card d-flex flex-column h-100" ng-click="goTo(tool)" role="button"
+                                aria-expanded="{{tool.expanded || false}}">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <i class="bi {{tool.icon}} tool-icon text-{{tool.color}}"></i>
+                                    <span class="category-badge">{{tool.category}}</span>
+                                </div>
+                                <h3 class="h6 mb-1">{{tool.title}}</h3>
+                                <p class="text-muted flex-grow-1 small">{{tool.description}}</p>
+
+                                <!-- Expanded Content -->
+                                <div class="mt-2 pt-2 border-top" ng-show="tool.expanded">
+                                    <p class="small mb-1"><strong>Features:</strong></p>
+                                    <ul class="small text-muted ps-3 mb-2">
+                                        <li>Instant processing</li>
+                                        <li>Browser-based</li>
+                                    </ul>
+                                    <a href="json-tools.html" class="btn btn-sm btn-retro w-100 py-1"
+                                        style="font-size: 0.8rem;" ng-if="tool.id === 1">Launch</a>
+                                    <button class="btn btn-sm btn-retro w-100 py-1" style="font-size: 0.8rem;"
+                                        ng-if="tool.id !== 1">Launch</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roadmaps Pane -->
+                <div class="tab-pane fade" id="roadmaps-pane" role="tabpanel" aria-labelledby="roadmaps-tab">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3" ng-repeat="map in roadmaps">
+                            <div class="roadmap-card h-100">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi {{map.icon}} fs-4 me-2 text-primary"></i>
+                                    <h3 class="h6 mb-0">{{map.title}}</h3>
+                                </div>
+                                <ul class="step-list">
+                                    <li class="step-item" ng-repeat="step in map.steps">{{step}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Input Tester - Test your keyboard and mouse events, check for ghosting and button functionality easily. Fast, secure, and browser-based.">
+    <meta name="keywords"
+        content="input tester, keyboard test, mouse test, ghosting test, key rollover, online tools, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/input-tester.html">
+    <meta property="og:title" content="Input Tester | EngineeringHacks">
+    <meta property="og:description"
+        content="Input Tester - Test your keyboard and mouse events, check for ghosting and button functionality easily. Fast, secure, and browser-based.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/input-tester.html">
+    <meta property="twitter:title" content="Input Tester | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Input Tester - Test your keyboard and mouse events, check for ghosting and button functionality easily. Fast, secure, and browser-based.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/input-tester.html">
+    <title>Input Tester | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .key-box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            font-weight: bold;
+            transition: background 0.1s;
+        }
+
+        .key-box.active {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .mouse-area {
+            height: 300px;
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .click-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body ng-controller="InputController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Input Tester</h1>
+
+            <div class="row g-4">
+                <!-- Keyboard Tester -->
+                <div class="col-md-12">
+                    <div class="card border-2 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 mb-0"><i class="bi bi-keyboard me-2"></i>Keyboard Tester</h3>
+                            <button class="btn btn-sm btn-outline-secondary" ng-click="resetKeys()">Reset</button>
+                        </div>
+
+                        <div class="alert alert-light border">
+                            Last Key: <strong>{{lastKey.code}}</strong> ({{lastKey.key}}) | Event: {{lastKey.type}}
+                        </div>
+
+                        <!-- Simplified visual keyboard layout -->
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <div class="key-box" ng-repeat="key in commonKeys" ng-class="{'active': pressedKeys[key]}"
+                                id="key-{{key}}">
+                                {{key}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mouse Tester -->
+                <div class="col-md-12">
+                    <div class="card border-2 p-4">
+                        <h3 class="h5 mb-3"><i class="bi bi-mouse me-2"></i>Mouse Tester</h3>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Left Click
+                                        <span class="badge bg-primary rounded-pill"
+                                            ng-show="mouseState.left">Active</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Middle Click
+                                        <span class="badge bg-primary rounded-pill"
+                                            ng-show="mouseState.middle">Active</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Right Click
+                                        <span class="badge bg-primary rounded-pill"
+                                            ng-show="mouseState.right">Active</span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        Scroll: {{mouseState.scroll}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        X: {{mouseState.x}}, Y: {{mouseState.y}}
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mouse-area" id="mouseArea" ng-mousedown="onMouseDown($event)"
+                                    ng-mouseup="onMouseUp($event)" ng-mousemove="onMouseMove($event)"
+                                    ng-right-click="preventMenu($event)">
+                                    <div class="text-center text-muted pt-5 user-select-none">
+                                        Click and move mouse here
+                                    </div>
+                                    <div class="click-marker" ng-repeat="click in clicks track by $index"
+                                        ng-style="{'left': click.x + 'px', 'top': click.y + 'px', 'background': click.color}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

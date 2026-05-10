@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Organize PDF - Rotate, delete, and reorder pages in your PDF document easily. Fast, secure, and works directly in your browser.">
+    <meta name="keywords"
+        content="organize pdf, rotate pdf pages, delete pdf pages, reorder pdf pages, online pdf tools, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/pdf-organize.html">
+    <meta property="og:title" content="Organize PDF | EngineeringHacks">
+    <meta property="og:description"
+        content="Organize PDF - Rotate, delete, and reorder pages in your PDF document easily. Fast, secure, and works directly in your browser.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/pdf-organize.html">
+    <meta property="twitter:title" content="Organize PDF | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Organize PDF - Rotate, delete, and reorder pages in your PDF document easily. Fast, secure, and works directly in your browser.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/pdf-organize.html">
+    <title>Organize PDF | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-color: var(--primary-color);
+        }
+
+        .page-card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+            transition: all 0.2s;
+        }
+
+        .page-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-preview {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .page-preview canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-actions {
+            padding: 8px;
+            background: #fff;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-number {
+            font-weight: bold;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body ng-controller="PdfOrganizeController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Organize PDF</h1>
+
+            <div class="card border-2 p-4 mb-4" ng-show="!pdfFile">
+                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                    <i class="bi bi-grid-3x3-gap fs-1 text-warning mb-3"></i>
+                    <h3 class="h5">Click to Upload PDF</h3>
+                    <p class="text-muted mb-0">Max file size: 20MB</p>
+                    <input type="file" id="fileInput" class="d-none" accept="application/pdf"
+                        onchange="angular.element(this).scope().handleFileSelect(this)">
+                </div>
+            </div>
+
+            <div ng-show="pdfFile">
+                <div
+                    class="d-flex justify-content-between align-items-center mb-4 sticky-top bg-white py-3 border-bottom z-1">
+                    <div>
+                        <h5 class="mb-1">{{pdfFile.name}}</h5>
+                        <p class="text-muted small mb-0">{{pages.length}} Pages</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-danger" ng-click="reset()">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </button>
+                        <button class="btn btn-primary" ng-click="savePdf()">
+                            <i class="bi bi-download"></i> Save PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-4" id="sortable-pages">
+                    <div class="col-6 col-md-4 col-lg-3" ng-repeat="page in pages track by $index">
+                        <div class="page-card">
+                            <div class="page-preview">
+                                <canvas id="canvas-{{$index}}"></canvas>
+                            </div>
+                            <div class="page-actions">
+                                <span class="page-number">{{$index + 1}}</span>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary" ng-click="rotatePage($index)"
+                                        title="Rotate">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" ng-click="deletePage($index)" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="position-absolute top-0 end-0 p-2" ng-if="page.rotation !== 0">
+                                <span class="badge bg-warning text-dark">{{page.rotation}}°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-5" ng-if="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Rendering pages...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <!-- pdf-lib -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- PDF.js for rendering previews -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <script src="https://unpkg.com/downloadjs@1.4.7/download.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

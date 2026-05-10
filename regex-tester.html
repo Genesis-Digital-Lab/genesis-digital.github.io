@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Advanced Regex Tester - Test regular expressions with live matching, common samples, and code snippet generation for multiple languages.">
+    <meta name="keywords"
+        content="regex tester, regular expression, regex debugger, javascript regex, python regex, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/regex-tester.html">
+    <meta property="og:title" content="Regex Tester | EngineeringHacks">
+    <meta property="og:description"
+        content="Advanced Regex Tester - Test regular expressions with live matching, common samples, and code snippet generation for multiple languages.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/regex-tester.html">
+    <meta property="twitter:title" content="Regex Tester | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Advanced Regex Tester - Test regular expressions with live matching, common samples, and code snippet generation for multiple languages.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/regex-tester.html">
+    <title>Regex Tester | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .regex-input {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .match-highlight {
+            background-color: rgba(255, 159, 28, 0.3);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body ng-controller="RegexController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Regex Tester</h1>
+
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card border-2 p-4 h-100">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Regular Expression</label>
+                            <div class="input-group">
+                                <span class="input-group-text">/</span>
+                                <input type="text" class="form-control regex-input" ng-model="regexPattern"
+                                    ng-change="testRegex()" placeholder="e.g. [a-z]+">
+                                <span class="input-group-text">/</span>
+                                <input type="text" class="form-control regex-input" style="max-width: 100px;"
+                                    ng-model="regexFlags" ng-change="testRegex()" placeholder="gim">
+                            </div>
+                            <div class="form-text text-danger" ng-show="error">{{error}}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Test String</label>
+                            <textarea class="form-control regex-input" rows="5" ng-model="testString"
+                                ng-change="testRegex()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-2 p-4 h-100">
+                        <label class="form-label fw-bold">Common Samples</label>
+                        <div class="list-group list-group-flush">
+                            <button class="list-group-item list-group-item-action small py-2"
+                                ng-repeat="sample in regexSamples" ng-click="loadSample(sample)">
+                                <strong>{{sample.name}}</strong><br>
+                                <code class="text-muted">{{sample.pattern}}</code>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-2 h-100">
+                        <div class="card-header bg-transparent fw-bold">Matches</div>
+                        <div class="card-body">
+                            <div ng-if="matches.length === 0" class="text-muted">No matches found.</div>
+                            <ul class="list-group list-group-flush" ng-if="matches.length > 0">
+                                <li class="list-group-item" ng-repeat="match in matches track by $index">
+                                    <span class="badge bg-secondary me-2">Match {{$index + 1}}</span>
+                                    <span class="font-monospace">{{match}}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-2 h-100">
+                        <div
+                            class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center">
+                            Code Snippets
+                            <select class="form-select form-select-sm w-auto" ng-model="snippetLang">
+                                <option value="js">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="php">PHP</option>
+                                <option value="go">Go</option>
+                            </select>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="m-0 p-3 bg-light small"
+                                style="max-height: 300px; overflow-y: auto;"><code>{{generateSnippet()}}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

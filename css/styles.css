@@ -1,0 +1,329 @@
+/* Gen Z Retro Theme Variables */
+:root {
+    --bg-color: #FDFBF7;
+    /* Cream/Vintage Paper */
+    --text-color: #2D2D2D;
+    /* Soft Black */
+    --primary-color: #FF9F1C;
+    /* Retro Orange */
+    --secondary-color: #6B9080;
+    /* Sage Green */
+    --accent-color: #A4C3B2;
+    /* Mint */
+    --card-bg: #FFFFFF;
+    --border-color: #2D2D2D;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--bg-color);
+    border-bottom: 2px solid var(--border-color);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-color) !important;
+}
+
+.nav-link {
+    color: var(--text-color) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    padding: 2rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background-image: radial-gradient(var(--accent-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.hero-title {
+    font-size: 2.2rem;
+    margin-bottom: 0.3rem;
+    color: var(--text-color);
+    letter-spacing: -1px;
+}
+
+.hero-tagline {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+/* Tech Animation */
+.tech-anim {
+    font-family: 'Courier New', monospace;
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: inline-block;
+    border-right: 3px solid var(--primary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
+}
+
+@keyframes typing {
+    from {
+        width: 0
+    }
+
+    to {
+        width: 100%
+    }
+}
+
+@keyframes blink-caret {
+
+    from,
+    to {
+        border-color: transparent
+    }
+
+    50% {
+        border-color: var(--primary-color);
+    }
+}
+
+.btn-retro {
+    background: linear-gradient(45deg, var(--primary-color), #FFB74D);
+    color: #fff;
+    border: 2px solid var(--border-color);
+    box-shadow: 3px 3px 0px var(--border-color);
+    padding: 0.3rem 1.2rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-retro:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px var(--border-color);
+    color: #fff;
+    filter: brightness(1.1);
+}
+
+.btn-retro:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.btn-retro:focus-visible {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 4px;
+}
+
+/* RTL Support */
+.rtl-mode {
+    direction: rtl;
+    text-align: right;
+}
+
+.rtl-mode .step-list::before {
+    left: auto;
+    right: 10px;
+}
+
+.rtl-mode .step-item {
+    padding-left: 0;
+    padding-right: 30px;
+}
+
+.rtl-mode .step-item::before {
+    left: auto;
+    right: 3px;
+}
+
+/* Retro Card Style */
+.tool-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    height: 100%;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    position: relative;
+    box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.tool-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px var(--border-color);
+}
+
+.tool-card::before {
+    display: none;
+}
+
+.tool-card:hover::before {
+    display: none;
+}
+
+.tool-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+
+.tool-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.tool-card:hover .tool-icon {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* Roadmap Section */
+.roadmap-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 3px 3px 0px var(--accent-color);
+    transition: transform 0.2s ease;
+}
+
+.roadmap-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px var(--accent-color);
+}
+
+.roadmap-card h3 {
+    font-size: 1.1rem;
+}
+
+.step-list {
+    list-style: none;
+    padding: 0;
+    position: relative;
+    margin-bottom: 0;
+}
+
+.step-list::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.step-item {
+    padding-left: 30px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.step-item::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 6px;
+    width: 16px;
+    height: 16px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+}
+
+/* Footer */
+footer {
+    background-color: var(--bg-color);
+    border-top: 3px solid var(--border-color);
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Carbon Badge */
+#wcb.carbonbadge {
+    --b1: var(--primary-color);
+    --b2: var(--secondary-color);
+    margin-bottom: 0;
+}
+
+/* Retro Pill UI for Tabs */
+.filter-btn {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    padding: 0.3rem 1.2rem;
+    margin: 0 0.3rem 0.5rem;
+    border-radius: 50px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px var(--border-color);
+    background-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--border-color);
+    box-shadow: 2px 2px 0px var(--border-color);
+    transform: translate(1px, 1px);
+}

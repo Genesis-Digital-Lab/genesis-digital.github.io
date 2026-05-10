@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Advanced JSON Tools - Format, validate, minify, and convert JSON to YAML, CSV, XML, and more.">
+    <meta name="keywords"
+        content="json formatter, json validator, json to yaml, json to csv, json minifier, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/json-tools.html">
+    <meta property="og:title" content="JSON Tools | EngineeringHacks">
+    <meta property="og:description"
+        content="Advanced JSON Tools - Format, validate, minify, and convert JSON to YAML, CSV, XML, and more.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/json-tools.html">
+    <meta property="twitter:title" content="JSON Tools | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Advanced JSON Tools - Format, validate, minify, and convert JSON to YAML, CSV, XML, and more.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/json-tools.html">
+    <title>JSON Tools | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .json-editor {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .tree-view {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        .tree-key {
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .tree-key:hover {
+            text-decoration: underline;
+        }
+
+        .tree-string {
+            color: var(--secondary-color);
+        }
+
+        .tree-number {
+            color: var(--accent-color);
+        }
+
+        .tree-boolean {
+            color: #d63384;
+        }
+
+        .tree-null {
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body ng-controller="JsonController" ng-init="activePage='json'">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container-fluid px-4">
+            <h1 class="mb-4">JSON Transformation Tools</h1>
+
+            <div class="row g-3">
+                <!-- Input Pane -->
+                <div class="col-lg-5">
+                    <div class="card h-100 border-2">
+                        <div
+                            class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center py-1">
+                            <span class="small">Input JSON</span>
+                            <span class="badge bg-light text-dark border small" ng-show="stats"
+                                style="font-size: 0.7rem;">
+                                {{stats.lines}} lines | {{stats.size}} bytes
+                            </span>
+                        </div>
+                        <div class="card-body p-0">
+                            <textarea class="form-control border-0 h-100 json-editor p-2" ng-model="inputJson"
+                                ng-change="updateStats()" placeholder="Paste your JSON here..."
+                                style="min-height: 500px;"></textarea>
+                        </div>
+                        <div class="card-footer bg-transparent py-1">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" ng-model="pathQuery"
+                                    placeholder="Path Finder..." ng-change="findPath()" style="font-size: 0.75rem;">
+                                <span class="input-group-text" ng-show="foundPaths.length"
+                                    style="font-size: 0.75rem;">{{foundPaths.length}} found</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Central Controls -->
+                <div class="col-lg-2">
+                    <div class="card border-2 h-100">
+                        <div class="card-body p-2 d-flex flex-column gap-2">
+                            <button class="btn btn-retro btn-sm w-100 py-1" ng-click="formatJson()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-justify-left me-1"></i>Format
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="minifyJson()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-arrows-collapse me-1"></i>Minify
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="fixJson()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-magic me-1"></i>Fix JSON
+                            </button>
+
+                            <hr class="my-1">
+
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="jsonToTable()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-table me-1"></i>To Table
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="jsonToXml()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-filetype-xml me-1"></i>To XML
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="jsonToCsv()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-filetype-csv me-1"></i>To CSV
+                            </button>
+                            <button class="btn btn-outline-dark btn-sm w-100 py-1" ng-click="jsonToYaml()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-file-text me-1"></i>To YAML
+                            </button>
+
+                            <hr class="my-1">
+
+                            <button class="btn btn-outline-primary btn-sm w-100 py-1" ng-click="jsonToPython()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-code-slash me-1"></i>To Python
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm w-100 py-1" ng-click="jsonToJs()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-filetype-js me-1"></i>To JS
+                            </button>
+
+                            <hr class="my-1">
+
+                            <button class="btn btn-outline-secondary btn-sm w-100 py-1" ng-click="loadSample()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-file-earmark-code me-1"></i>Sample
+                            </button>
+                            <button class="btn btn-outline-success btn-sm w-100 py-1" ng-click="downloadJson()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-download me-1"></i>Download
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm w-100 py-1 mt-auto" ng-click="clearInput()"
+                                style="font-size: 0.75rem;">
+                                <i class="bi bi-trash me-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Pane -->
+                <div class="col-lg-5">
+                    <div class="card h-100 border-2">
+                        <div
+                            class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center py-1">
+                            <span class="small">Output / Tree View</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary py-0" ng-click="copyOutput()"
+                                    style="font-size: 0.7rem;">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-2 overflow-auto" style="max-height: 550px;">
+                            <div class="alert alert-danger py-1 px-2 small" ng-show="error" style="font-size: 0.75rem;">
+                                {{error}}</div>
+
+                            <div ng-if="viewMode === 'table'" class="table-responsive">
+                                <table class="table table-bordered table-sm small">
+                                    <thead>
+                                        <tr>
+                                            <th ng-repeat="header in tableHeaders">{{header}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="row in tableData">
+                                            <td ng-repeat="header in tableHeaders">{{row[header]}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <pre ng-if="viewMode === 'text'" class="mb-0 small"
+                                style="font-size: 0.8rem;">{{outputString}}</pre>
+
+                            <div ng-if="viewMode === 'tree'" class="tree-view small">
+                                <json-tree data="jsonData" path="''"></json-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/json-utils.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="engineeringHacksApp">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-33M8S9CJLV"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-33M8S9CJLV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Image Cropper - Crop and resize images online with ease. Supports various aspect ratios and free cropping.">
+    <meta name="keywords" content="image cropper, crop image online, resize image, photo cropper, developer tools">
+    <meta name="author" content="EngineeringHacks">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://engineeringhacks.com/image-cropper.html">
+    <meta property="og:title" content="Image Cropper | EngineeringHacks">
+    <meta property="og:description"
+        content="Image Cropper - Crop and resize images online with ease. Supports various aspect ratios and free cropping.">
+    <meta property="og:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://engineeringhacks.com/image-cropper.html">
+    <meta property="twitter:title" content="Image Cropper | EngineeringHacks">
+    <meta property="twitter:description"
+        content="Image Cropper - Crop and resize images online with ease. Supports various aspect ratios and free cropping.">
+    <meta property="twitter:image" content="https://engineeringhacks.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://engineeringhacks.com/image-cropper.html">
+    <title>Image Cropper | EngineeringHacks</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .img-container {
+            max-height: 600px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .img-container img {
+            max-width: 100%;
+        }
+
+        .preview-container {
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            background-color: #ffffff;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .drop-zone:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+
+<body ng-controller="ImageCropperController">
+
+    <!-- Header -->
+    <div ng-include="'partials/header.html'"></div>
+
+    <main class="py-4">
+        <div class="container">
+            <h1 class="mb-4">Image Cropper</h1>
+
+            <div class="row g-4">
+                <div class="col-md-8">
+                    <div class="card border-2 h-100">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Editor</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-upload"></i> Upload
+                                </button>
+                                <input type="file" id="fileInput" class="d-none" accept="image/*"
+                                    onchange="angular.element(this).scope().handleFileSelect(this)">
+                            </div>
+                        </div>
+                        <div class="card-body p-0 d-flex align-items-center justify-content-center bg-white"
+                            style="min-height: 400px;">
+                            <div class="img-container" ng-show="imageSrc">
+                                <img id="image" ng-src="{{imageSrc}}" alt="Picture">
+                            </div>
+                            <div ng-show="!imageSrc" class="drop-zone mx-3"
+                                onclick="document.getElementById('fileInput').click()">
+                                <i class="bi bi-image fs-1 text-muted"></i>
+                                <p class="mb-0">Drag & Drop or Click to Upload</p>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent" ng-show="imageSrc">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-outline-secondary" ng-click="rotate(-90)" title="Rotate Left"><i
+                                        class="bi bi-arrow-counterclockwise"></i></button>
+                                <button class="btn btn-outline-secondary" ng-click="rotate(90)" title="Rotate Right"><i
+                                        class="bi bi-arrow-clockwise"></i></button>
+                                <button class="btn btn-outline-secondary" ng-click="flipX()" title="Flip Horizontal"><i
+                                        class="bi bi-arrow-left-right"></i></button>
+                                <button class="btn btn-outline-secondary" ng-click="flipY()" title="Flip Vertical"><i
+                                        class="bi bi-arrow-down-up"></i></button>
+                                <button class="btn btn-outline-secondary" ng-click="reset()" title="Reset"><i
+                                        class="bi bi-arrow-repeat"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-2 h-100">
+                        <div class="card-header bg-transparent fw-bold">Preview & Export</div>
+                        <div class="card-body">
+                            <div class="preview-container mb-3"></div>
+
+                            <h6 class="fw-bold small">Aspect Ratio</h6>
+                            <div class="btn-group w-100 mb-3">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    ng-click="setAspectRatio(16/9)">16:9</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    ng-click="setAspectRatio(4/3)">4:3</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    ng-click="setAspectRatio(1)">1:1</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    ng-click="setAspectRatio(NaN)">Free</button>
+                            </div>
+
+                            <button class="btn btn-retro w-100 mb-3" ng-click="crop()" ng-disabled="!imageSrc">
+                                <i class="bi bi-crop"></i> Crop & Download
+                            </button>
+
+                            <!-- Social Sharing -->
+                            <div class="mt-3 pt-3 border-top" ng-show="imageSrc">
+                                <p class="small fw-bold mb-2">Share Tool:</p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary" ng-click="share('whatsapp')">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" ng-click="share('telegram')">
+                                        <i class="bi bi-telegram"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" ng-click="share('twitter')">
+                                        <i class="bi bi-twitter"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div ng-include="'partials/footer.html'"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/toolsData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
